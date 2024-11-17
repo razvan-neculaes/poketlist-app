@@ -1,9 +1,7 @@
-// App.test.js
-
 import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom'; // Import MemoryRouter
-import App, { Pokemons } from './App'; // Named import for the Pokemons component
+import { render, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import App, { Pokemons } from './App';
 
 // Mock the components
 jest.mock('./components/Header', () => () => <div>Header</div>);
@@ -12,7 +10,6 @@ jest.mock('./components/PokemonList', () => () => <div>Pokemon List</div>);
 jest.mock('./components/PokemonDetails', () => () => <div>Pokemon Details</div>);
 
 describe('App component', () => {
-
   test('renders Header and Footer on all routes', () => {
     render(<App />);
 
@@ -28,7 +25,7 @@ describe('App component', () => {
     expect(screen.getByText('Pokemon List')).toBeInTheDocument();
   });
 
-  test('renders PokemonDetails component on "/pokemon/:id" route', () => {
+  test('renders PokemonDetails component on "/pokemon/:id" route', async () => {
     // Render App with MemoryRouter and set initial entry to /pokemon/1
     render(
       <MemoryRouter initialEntries={['/pokemon/1']}>
@@ -36,7 +33,9 @@ describe('App component', () => {
       </MemoryRouter>
     );
 
-    // Check if the PokemonDetails component is rendered
-    expect(screen.getByText('Pokemon Details')).toBeInTheDocument();
+    // Use waitFor to handle the asynchronous loading of the PokemonDetails component
+    await waitFor(() => {
+      expect(screen.getByText('Pokemon Details')).toBeInTheDocument();
+    });
   });
 });

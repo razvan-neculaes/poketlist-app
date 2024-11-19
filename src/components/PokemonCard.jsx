@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { Box, Image, Text, VStack } from '@chakra-ui/react';
 
-const PokemonCard = ({ id, name, image }) => {
+const PokemonCard = React.memo(({ id, name, image }) => {
   return (
     <Link to={`/pokemon/${id}`} style={{ textDecoration: 'none' }}>
       <Box
@@ -20,7 +20,7 @@ const PokemonCard = ({ id, name, image }) => {
       >
         <Image
           src={image}
-          alt={name}
+          alt={`Image of ${name}`}
           width="100%"
           borderRadius="md"
           objectFit="cover"
@@ -33,7 +33,10 @@ const PokemonCard = ({ id, name, image }) => {
       </Box>
     </Link>
   );
-};
+});
+
+// Set the display name for the component
+PokemonCard.displayName = 'PokemonCard';
 
 PokemonCard.propTypes = {
   id: PropTypes.number.isRequired,

@@ -11,50 +11,26 @@ const PokemonList = () => {
   );
 
   useEffect(() => {
-    // Fetch the initial list of Pokémon when the component mounts
-    fetchInitialPokemonList();
-  }, []); // Empty dependency array ensures this runs only once when the component mounts
+    fetchPokemonList();
+  }, []);
 
-  const fetchInitialPokemonList = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(nextUrl);
-      const data = await response.json();
-      setNextUrl(data.next);
-
-      // Fetch details for each Pokémon
-      const detailedPokemons = await Promise.all(
-        data.results.map(async pokemon => {
-          const res = await fetch(pokemon.url);
-          return await res.json();
-        })
-      );
-
-      // Set the initial Pokémon data
-      setPokemons(detailedPokemons);
-    } catch (error) {
-      setError('Sorry, we could not load the Pokémon list.');
-    } finally {
-      setLoading(false);
-    }
+  const fetchPokemonDetails = async url => {
+    const res = await fetch(url);
+    return await res.json();
   };
 
   const fetchPokemonList = async () => {
     try {
       setLoading(true);
+      setError(null); // Reset error state before fetching
       const response = await fetch(nextUrl);
       const data = await response.json();
       setNextUrl(data.next);
 
-      // Fetch details for each Pokémon
       const detailedPokemons = await Promise.all(
-        data.results.map(async pokemon => {
-          const res = await fetch(pokemon.url);
-          return await res.json();
-        })
+        data.results.map(pokemon => fetchPokemonDetails(pokemon.url))
       );
 
-      // Append the new Pokémon data to the existing list
       setPokemons(prevPokemons => [...prevPokemons, ...detailedPokemons]);
     } catch (error) {
       setError('Sorry, we could not load the Pokémon list.');
@@ -90,7 +66,7 @@ const PokemonList = () => {
         {pokemons.map(pokemon => (
           <PokemonCard
             key={pokemon.id}
-            id={Number(pokemon.id)} // Convert id to a number
+            id={Number(pokemon.id)}
             name={pokemon.name}
             image={pokemon.sprites.front_default}
           />

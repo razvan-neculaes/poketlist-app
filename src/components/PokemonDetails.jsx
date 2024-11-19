@@ -21,15 +21,29 @@ const PokemonDetails = () => {
 
   useEffect(() => {
     const fetchPokemonDetails = async () => {
+      const controller = new AbortController();
+      const signal = controller.signal;
+
       try {
-        const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
+        setError(null); // Reset error state before fetching
+        const response = await fetch(
+          `https://pokeapi.co/api/v2/pokemon/${id}`,
+          { signal }
+        );
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
         const data = await response.json();
         setPokemon(data);
       } catch (error) {
-        setError('Sorry, we could not load the Pokémon details.');
+        if (error.name !== 'AbortError') {
+          setError('Sorry, we could not load the Pokémon details.');
+        }
       } finally {
         setLoading(false);
       }
+
+      return () => controller.abort(); // Cleanup function to abort fetch
     };
 
     fetchPokemonDetails();
@@ -96,7 +110,7 @@ const PokemonDetails = () => {
     >
       <Image
         src={pokemon.sprites.front_default}
-        alt={pokemon.name}
+        alt={`Image of ${pokemon.name}`}
         width="200px"
         borderRadius="full"
         marginBottom="1.5rem"

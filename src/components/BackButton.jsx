@@ -12,11 +12,21 @@ const BackButton = () => {
   const navigate = useNavigate();
 
   const handleBackClick = () => {
-    navigate(-1); // Navigate to the previous page
+    if (window.history.length > 1) {
+      navigate(-1); // Navigate to the previous page
+    } else {
+      navigate('/'); // Fallback to home or a default route if no history
+    }
   };
 
   return (
-    <Button onClick={handleBackClick} colorScheme="blue" size="lg" mt="4">
+    <Button
+      onClick={handleBackClick}
+      colorScheme="blue"
+      size="lg"
+      mt="4"
+      aria-label="Go back to the previous page"
+    >
       Back
     </Button>
   );

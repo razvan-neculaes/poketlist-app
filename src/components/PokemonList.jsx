@@ -63,10 +63,10 @@ const PokemonList = () => {
   return (
     <Box>
       <Flex wrap="wrap" justifyContent="center">
-        {pokemons.map(pokemon => (
+        {pokemons.map((pokemon, index) => (
           <PokemonCard
-            key={pokemon.id}
-            id={Number(pokemon.id)}
+            key={`${pokemon.id}-${index}`} // Use id if available; fallback to unique combination
+            id={pokemon.id}
             name={pokemon.name}
             image={pokemon.sprites.front_default}
           />

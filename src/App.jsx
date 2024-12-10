@@ -4,6 +4,7 @@ import { Box, Flex, Spinner, Text } from '@chakra-ui/react';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import PokemonList from './components/PokemonList';
+import { PokemonProvider } from './PokemonContext'; // Import the provider
 
 // Lazy load the PokemonDetails component
 const PokemonDetails = React.lazy(() => import('./components/PokemonDetails'));
@@ -43,10 +44,11 @@ export const Pokemons = () => {
   );
 };
 
-// App with Router wrapper
 const App = () => (
   <Router>
-    <Pokemons />
+    <PokemonProvider>
+      <Pokemons />
+    </PokemonProvider>
   </Router>
 );
 

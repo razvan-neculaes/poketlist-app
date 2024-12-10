@@ -1,45 +1,42 @@
-import React, { useEffect, useState } from 'react';
-import { Box, Flex, Button, Text, Spinner } from '@chakra-ui/react';
+import React, { useEffect } from 'react';
+import { Box, Button, Flex, Spinner, Text } from '@chakra-ui/react';
 import PokemonCard from './PokemonCard';
+import { usePokemon } from '../PokemonContext';
 
 const PokemonList = () => {
-  const [pokemons, setPokemons] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [nextUrl, setNextUrl] = useState(
-    'https://pokeapi.co/api/v2/pokemon?limit=20'
-  );
-
-  useEffect(() => {
-    fetchPokemonList();
-  }, []);
+  const { state, dispatch } = usePokemon();
 
   const fetchPokemonDetails = async url => {
-    const res = await fetch(url);
-    return await res.json();
+    const response = await fetch(url);
+    return await response.json();
   };
 
   const fetchPokemonList = async () => {
     try {
-      setLoading(true);
-      setError(null); // Reset error state before fetching
-      const response = await fetch(nextUrl);
+      const response = await fetch(state.nextUrl);
       const data = await response.json();
-      setNextUrl(data.next);
 
+      // Fetch detailed data for each Pokémon to get the id
       const detailedPokemons = await Promise.all(
         data.results.map(pokemon => fetchPokemonDetails(pokemon.url))
       );
 
-      setPokemons(prevPokemons => [...prevPokemons, ...detailedPokemons]);
+      dispatch({
+        type: 'ADD_POKEMONS',
+        payload: { pokemons: detailedPokemons, nextUrl: data.next },
+      });
     } catch (error) {
-      setError('Sorry, we could not load the Pokémon list.');
-    } finally {
-      setLoading(false);
+      console.error('Failed to fetch Pokémon:', error);
     }
   };
 
-  if (loading && pokemons.length === 0) {
+  useEffect(() => {
+    if (state.pokemons.length === 0) {
+      fetchPokemonList();
+    }
+  }, [state.pokemons.length]);
+
+  if (state.pokemons.length === 0) {
     return (
       <Flex justifyContent="center" alignItems="center" height="100vh">
         <Spinner size="xl" color="blue.500" />
@@ -50,34 +47,24 @@ const PokemonList = () => {
     );
   }
 
-  if (error) {
-    return (
-      <Flex justifyContent="center" alignItems="center" height="100vh">
-        <Text fontSize="xl" color="red.500">
-          {error}
-        </Text>
-      </Flex>
-    );
-  }
-
   return (
     <Box>
       <Flex wrap="wrap" justifyContent="center">
-        {pokemons.map((pokemon, index) => (
+        {state.pokemons.map((pokemon, index) => (
           <PokemonCard
-            key={`${pokemon.id}-${index}`} // Use id if available; fallback to unique combination
+            key={pokemon.id || index} // Use id if available, fallback to index
             id={pokemon.id}
             name={pokemon.name}
-            image={pokemon.sprites.front_default}
+            image={pokemon.sprites?.front_default || 'default-image-url'}
           />
         ))}
       </Flex>
-      {nextUrl && (
+      {state.nextUrl && (
         <Flex justifyContent="center" mt="4">
           <Button
             onClick={fetchPokemonList}
             colorScheme="blue"
-            isLoading={loading}
+            isLoading={false}
             loadingText="Loading"
           >
             Load More Pokémon
